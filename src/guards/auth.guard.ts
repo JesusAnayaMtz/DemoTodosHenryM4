@@ -11,7 +11,7 @@ function validateRequest(request: Request) {
     return token === '1234'
 }
 
-//
+
 //el guard debe ser decorado con @Injectable()
 //lo que hara  es que validara y devolvera un tuee o false y correra el endoint en caso de que sea true
 //ahora esto se debe implementa en el endpoint a proteger

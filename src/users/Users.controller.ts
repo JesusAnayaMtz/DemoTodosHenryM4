@@ -4,7 +4,7 @@ import type { Response } from "express";
 import type { User } from "./user.interface";
 import { AuthGuard } from "src/guards/auth.guard";
 import { DateAdderInterceptor } from "src/interceptors/date-adder.interceptor";
-import { log } from "console";
+
 
 //agregamos dentro del controller el "users" esto sirve 
 // para que se vea el path en la url y a esta ruta llamaremos
@@ -30,7 +30,6 @@ export class UsersControllers {
     @Get()
     getUsers(@Query('name') name?: string) {
         //si viene el nombre lo filtra
-
         if (name) {
             return this.usersService.getUsersByName(name);
         }
@@ -51,7 +50,7 @@ export class UsersControllers {
     }
 
     @Get('profile/images')
-   // @UseGuards(AuthGuard) //usamos el decorador UseGuards para indicar que se usara el guard AuthGuard
+   @UseGuards(AuthGuard) //usamos el decorador UseGuards para indicar que se usara el guard AuthGuard
     getUserImages() {
         return "Este endpoint devuelve las imagenes del usuario";
     }
@@ -68,7 +67,6 @@ export class UsersControllers {
         //improimimos el now que viene del interceptor ya formateado
         console.log('dentro del endpoint: ', request.now);
         return this.usersService.createUser(user);
-
     }
 
     //para colocar un status code se usa el decorador HttpCode
