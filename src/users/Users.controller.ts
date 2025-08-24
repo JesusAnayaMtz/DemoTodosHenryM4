@@ -1,9 +1,10 @@
 import { Body, Controller, Delete, Get, Headers, HttpCode, Param, Post, Put, Query, Req, Res, UseGuards, UseInterceptors } from "@nestjs/common";
 import { UsersService } from "./Users.service";
 import type { Response } from "express";
-import type { User } from "./user.interface";
+import {User} from "./users.entity"
 import { AuthGuard } from "src/guards/auth.guard";
 import { DateAdderInterceptor } from "src/interceptors/date-adder.interceptor";
+import { UsersDBService } from "./UsersDB.service";
 
 
 //agregamos dentro del controller el "users" esto sirve 
@@ -13,7 +14,9 @@ import { DateAdderInterceptor } from "src/interceptors/date-adder.interceptor";
 export class UsersControllers {
     //al colocar el contructor le pasamos el service esto crea automaticamente 
     // una instancia de este service
-    constructor(private readonly usersService: UsersService) {
+    constructor(private readonly usersService: UsersService,
+        private readonly userDbService: UsersDBService
+    ) {
     }
     /*     //para crear una ruta de nuestro controller se usa el decorador @Get()
         // y le pasamos el path que queremos que tenga la ruta
@@ -62,11 +65,10 @@ export class UsersControllers {
     @UseInterceptors(DateAdderInterceptor) //usamos el interceptor DateAdderInterceptor para indicar que usara nuestro interceptor
     ////ahora al usar el interceptor modificamos el objeto request del tipo 
     // Request pero le pedimos que concatene con el now del tipo string y lo formateamos
-
     createUser(@Body() user: User, @Req() request: Request & { now: string }) {  
         //improimimos el now que viene del interceptor ya formateado
         console.log('dentro del endpoint: ', request.now);
-        return this.usersService.createUser(user);
+        return this.userDbService.saveUser({...user, createdAt: request.now}); //usamos el spread operator para unir los datos y usamos ahora el UserDbService
     }
 
     //para colocar un status code se usa el decorador HttpCode

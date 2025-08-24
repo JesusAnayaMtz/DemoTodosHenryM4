@@ -3,6 +3,9 @@ import { UsersService } from "./Users.service";
 import { UsersControllers } from "./Users.controller";
 import { LoggerMiddleware } from "src/middlewares/Logger.middleware";
 import { UsersRepository } from "./Users.Repository";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { User } from "./users.entity";
+import { UsersDBService } from "./UsersDB.service";
 
 //pen alguna ocaciones podemos usar un objeto como provider, por ejemplo un 
 // Mock para alguna prueba o directamente un valor en particular y definirlo en el array de providers
@@ -11,6 +14,9 @@ import { UsersRepository } from "./Users.Repository";
  }
 
 @Module({
+    //ahora importamos el typeormModule para poder usar el typeorm y usamos el forFeature para decirle que es un provider
+    //que va a usar el typeormModule y dentro le pasaremos la entidad que queremos usar en el typeormModule en este caso User
+    imports: [TypeOrmModule.forFeature([User])],
     //aqui tambien agregamos el UsersRepository ya que como es un injectable se debe poner dentro de los providers
     providers: [UsersService, /* {
         //definimos aqui que cuando se use el usersService, usara el valor de mockService, esto se hara al llamar al endpoint users
@@ -20,6 +26,7 @@ import { UsersRepository } from "./Users.Repository";
     UsersRepository, 
     //generamos un nuevo provider que se llamara suponiendo que tenemos usuarios en otro servicio
     //y lo tenemos que llamar a traves de una peticion http.
+    UsersDBService,
     {
         provide: 'API_USERS', //definimos el nombre de provider para poder usarlo en el service
         //en use factory definimos la logica para hacer la peticion http es una funcion asincrona
