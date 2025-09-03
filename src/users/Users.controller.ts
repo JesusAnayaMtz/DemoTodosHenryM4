@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, Headers, HttpCode, Param, Post, Put, Query, Req, Res, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Headers, HttpCode, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, ParseUUIDPipe, Post, Put, Query, Req, Res, UseGuards, UseInterceptors } from "@nestjs/common";
 import { UsersService } from "./Users.service";
 import type { Response } from "express";
-import {User} from "./users.entity"
 import { AuthGuard } from "src/guards/auth.guard";
 import { DateAdderInterceptor } from "src/interceptors/date-adder.interceptor";
 import { UsersDBService } from "./UsersDB.service";
+import { CreateUserDto } from "./dtos/CreateUser.dto";
+import { Not } from "typeorm";
+import { User } from "./users.entity";
 
 
 //agregamos dentro del controller el "users" esto sirve 
@@ -34,10 +36,10 @@ export class UsersControllers {
     getUsers(@Query('name') name?: string) {
         //si viene el nombre lo filtra
         if (name) {
-            return this.usersService.getUsersByName(name);
+            return this.userDbService.getUsersByName(name);
         }
         //de lo contrario retorna todos los usuarios
-        return this.usersService.getUsers();
+        return this.userDbService.getUsers();
     }
 
     //ahora vamos a agregar un header a la peticion
@@ -53,7 +55,7 @@ export class UsersControllers {
     }
 
     @Get('profile/images')
-   @UseGuards(AuthGuard) //usamos el decorador UseGuards para indicar que se usara el guard AuthGuard
+    @UseGuards(AuthGuard) //usamos el decorador UseGuards para indicar que se usara el guard AuthGuard
     getUserImages() {
         return "Este endpoint devuelve las imagenes del usuario";
     }
@@ -65,17 +67,22 @@ export class UsersControllers {
     @UseInterceptors(DateAdderInterceptor) //usamos el interceptor DateAdderInterceptor para indicar que usara nuestro interceptor
     ////ahora al usar el interceptor modificamos el objeto request del tipo 
     // Request pero le pedimos que concatene con el now del tipo string y lo formateamos
-    createUser(@Body() user: User, @Req() request: Request & { now: string }) {  
+    createUser(@Body() user: CreateUserDto, @Req() request: Request & { now: string }) {  
         //improimimos el now que viene del interceptor ya formateado
         console.log('dentro del endpoint: ', request.now);
         return this.userDbService.saveUser({...user, createdAt: request.now}); //usamos el spread operator para unir los datos y usamos ahora el UserDbService
     }
 
     //para colocar un status code se usa el decorador HttpCode
-    @HttpCode(418)
+    //@HttpCode(418)
     @Get('coffe')
     getCoffe() {
-        return "No se hacer cafe, soy una tetera";
+        try {
+            throw new Error(); // aqui usamos dentro de try un error generico
+        } catch (error) {
+            throw new HttpException({status: HttpStatus.I_AM_A_TEAPOT, error: "No hay cafe disponible"}, HttpStatus.I_AM_A_TEAPOT) 
+            // aqui lanzamos una excepcion personalizada usando HttpException
+        }
     }
 
     //tambien podemos acceder al response para poder modificarlo
@@ -108,10 +115,13 @@ export class UsersControllers {
     //para hacer uso de params vamos a usar la anotacion @Param() y le pasamos dentro el nombre del parametro
     //en este caso el id y lo guardamos en un atributo id del tipo string y se lo pasamos a nuestra funcion del service 
     //pero lo convertimos a numerico
+    //agregamos el PArseUUIDPipe para validar que el id sea un uuid en este caso nos devolvera un error 400 comentadonos que es invalido el parametro que se le pasa
     @Get(':id')
-    getUserById(@Param('id') id: string) {
-        return this.usersService.getUserById(Number(id));
-
+    async getUserById(@Param('id', ParseUUIDPipe)  id: string){
+        const user = await this.userDbService.getUserById(id);
+        if(!user) { // Si no se encuentra el usuario
+            throw new NotFoundException("Usuario no encontrado"); // Lanzamos una excepción si no se encuentra el usuario usando NotFoundException
+        }
+        return user;
     }
-
 }

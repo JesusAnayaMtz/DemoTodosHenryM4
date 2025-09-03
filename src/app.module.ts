@@ -36,10 +36,10 @@ import typeOrmConfig from './config/typeorm';
   //esta seria otra forma de proteger las rutas directamente en el app.module mas cercano a lo que s eva a proteger
   //y lo pasamos en los providers
   providers: [
-    {
+    /* {
       provide: APP_GUARD,
       useClass: AuthGuard,
-    },
+    }, */
     //esta seria otra forma de coloca un interceptor global
     /* {
     provide: APP_INTERCEPTOR,

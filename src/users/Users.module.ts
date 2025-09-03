@@ -55,5 +55,4 @@ export class UsersModule implements NestModule{
         //en este caso a la rutas que inicien con users
         consumer.apply(LoggerMiddleware).forRoutes('users')
     }
-
 }

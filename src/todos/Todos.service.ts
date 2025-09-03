@@ -3,6 +3,7 @@ import { TodosRepository } from "./Todos.repository";
 
 @Injectable()
 export class TodosService {
+    
     constructor(private todosRepository: TodosRepository,
         //aqui inyectamos el access token que se declaro en el module
         //usamos el decorador Inject para inyectar el valor y private y una variable para el tipo de valor
@@ -15,5 +16,9 @@ export class TodosService {
         //retorne los usuarios si no devuelva que no tiene acceso
         return this.accessToken === 'ESTA ES MI CLAVE SECRETA' ?
             this.todosRepository.getTodos() : "No Tiene Acceso A Esta Informacion"
+    }
+
+    getTodoById(id: number) {
+      throw new Error("Method not implemented.");
     }
 }
